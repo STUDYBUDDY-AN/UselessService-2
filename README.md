@@ -8,6 +8,7 @@ The **Cloud Gateway** serves as the single entry point for the StudyBuddy micros
 *   **JWT Authentication**: Validates JSON Web Tokens (JWT) for protected routes using a custom Gateway Filter.
 *   **Header Injection**: Extracts user details (ID, Roles) from the JWT and injects them as headers (`X-User-Id`, `X-User-Roles`) for downstream services.
 *   **Health Monitoring**: Integrated Spring Boot Actuator for health checks and metrics.
+*   **CORS Support**: Handles Cross-Origin Resource Sharing preflight requests.
 
 ## 🛠️ Tech Stack
 
@@ -36,7 +37,7 @@ The gateway is configured to route traffic to the following services:
 | Service ID | Upstream URL | Path Predicates |
 | :--- | :--- | :--- |
 | **user_identity_service** | `http://localhost:8081` | `/api/v1/auth/**`, `/api/v1/users/**` |
-| **collaboration_service** | `http://localhost:8082` | `/api/v1/groups/**` |
+| **collaboration_service** | `http://localhost:8082` | `/api/v1/groups/**`, `/api/v1/files/**` |
 
 > **Note**: Ensure the upstream services are running on their respective ports locally.
 
@@ -45,19 +46,21 @@ The gateway is configured to route traffic to the following services:
 The `JwtAuthGatewayFilter` handles request security:
 
 1.  **Public Endpoints**: Requests to `/api/v1/auth` are whitelisted and forwarded immediately.
-2.  **Token Validation**: All other requests must include an `Authorization` header with a valid Bearer token.
-3.  **Claims Extraction**: The filter validates the token signature using `app.jwtSecret`.
-4.  **Context Propagation**:
+2.  **CORS**: `OPTIONS` requests are allowed to pass through for browser preflight checks.
+3.  **Token Validation**: All other requests must include an `Authorization` header with a valid Bearer token.
+4.  **Claims Extraction**: The filter validates the token signature using `app.jwtSecret`.
+5.  **Context Propagation**:
     *   `X-User-Id`: Extracted from the token subject.
     *   `X-User-Roles`: Extracted from the `roles` claim.
     *   These headers are added to the request before it is sent to the downstream service.
-5.  **Unauthorized**: If the token is missing or invalid, a `401 Unauthorized` response is returned.
+6.  **Unauthorized**: If the token is missing or invalid, a `401 Unauthorized` response is returned.
 
 ## 📦 Getting Started
 
 ### Prerequisites
 *   Java 25 SDK installed.
 *   Gradle installed (or use the provided wrapper).
+*   Docker (optional)
 
 ### Build and Run
 
@@ -69,6 +72,19 @@ The `JwtAuthGatewayFilter` handles request security:
 3.  **Run the application**:
     ```bash
     ./gradlew bootRun
+    ```
+
+### Docker Support
+
+To build and run the application using Docker:
+
+1.  **Build the Docker image**:
+    ```bash
+    docker build -t cloud-gateway .
+    ```
+2.  **Run the container**:
+    ```bash
+    docker run -p 8080:8080 cloud-gateway
     ```
 
 ### Testing

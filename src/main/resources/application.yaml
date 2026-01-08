@@ -17,6 +17,10 @@ spring:
           predicates:
             - Path=/api/v1/groups/**,/api/v1/files/**
 
+logging:
+  pattern:
+    console: "%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - %msg%n"
+
 app:
   jwtSecret: 5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437
 
